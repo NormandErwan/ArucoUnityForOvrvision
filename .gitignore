@@ -1,10 +1,12 @@
 ## OvrvisionPro
 
-**/Assets/OvrvisionPro*
+**/Assets/OvrvisionPro/
+**/Assets/OvrvisionPro.meta
 
 ## ArucoUnity
 
-**/Assets/ArucoUnity*
+**/Assets/ArucoUnity/
+**/Assets/ArucoUnity.meta
 *.rsp*
 *.png*
 *.xml*
