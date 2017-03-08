@@ -1,5 +1,6 @@
 ﻿using ArucoUnity.Utility;
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace ArucoUnity
@@ -31,8 +32,17 @@ namespace ArucoUnity
       protected const int LEFT_CAMERA_LAYER = 24;
       protected const int RIGHT_CAMERA_LAYER = 25;
 
+      // Ovrvision plugin functions
+
+      [DllImport("ovrvision", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+      static extern void ovPreStoreCamData(int processingQuality);
+
+      [DllImport("ovrvision", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+      static extern void ovGetCamImageRGB(byte[] imageData, int eye);
+
       // Editor fields
-      public CameraModes cameraMode = CameraModes.VR_960x950_60FPS;
+
+      private CameraModes cameraMode = CameraModes.VR_960x950_60FPS;
 
       // ArucoCamera properties implementation
 
@@ -136,7 +146,6 @@ namespace ArucoUnity
       // Variables
 
       protected COvrvisionUnity OvrPro = new COvrvisionUnity();
-      protected System.IntPtr[] CameraTexturePtrs;
 
       // MonoBehaviour methods
 
@@ -147,7 +156,6 @@ namespace ArucoUnity
       {
         base.Awake();
         ImageTextures = new Texture2D[CamerasNumber];
-        CameraTexturePtrs = new IntPtr[CamerasNumber];
       }
 
       // ArucoCamera methods
@@ -242,9 +250,17 @@ namespace ArucoUnity
           throw new Exception("Unkown error when updating the images from the Ovrvision cameras. Try to restart the application.");
         }
 
-        OvrPro.UpdateImage(CameraTexturePtrs[COvrvisionUnity.OV_CAMEYE_LEFT], CameraTexturePtrs[COvrvisionUnity.OV_CAMEYE_RIGHT]);
+        ovPreStoreCamData(OvrPro.useProcessingQuality);
+        for (int i = 0; i < CamerasNumber; i++)
+        {
+          int dataSize = OvrPro.imageSizeW * OvrPro.imageSizeH * 3;
+          byte[] data = new byte[dataSize];
+          ovGetCamImageRGB(data, i);
+          ImageTextures[i].LoadRawTextureData(data);
+          ImageTextures[i].Apply(false);
+        }
 
-        ImagesUpdatedThisFrame = true;
+          ImagesUpdatedThisFrame = true;
         OnImagesUpdated();
       }
 
@@ -257,10 +273,8 @@ namespace ArucoUnity
       {
         for (int i = 0; i < CamerasNumber; i++)
         {
-          ImageTextures[i] = new Texture2D(OvrPro.imageSizeW, OvrPro.imageSizeH, TextureFormat.BGRA32, false);
+          ImageTextures[i] = new Texture2D(OvrPro.imageSizeW, OvrPro.imageSizeH, TextureFormat.RGB24, false);
           ImageTextures[i].wrapMode = TextureWrapMode.Clamp;
-          ImageTextures[i].Apply();
-          CameraTexturePtrs[i] = ImageTextures[i].GetNativeTexturePtr();
         }
       }
 
