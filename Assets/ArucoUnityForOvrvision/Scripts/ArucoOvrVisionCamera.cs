@@ -27,7 +27,7 @@ namespace ArucoUnity
       NONE,
     }
     
-    public class ArucoOvrVisionCamera : ArucoCamera
+    public class ArucoOvrvisionCamera : ArucoCamera
     {
       // Constants
 
