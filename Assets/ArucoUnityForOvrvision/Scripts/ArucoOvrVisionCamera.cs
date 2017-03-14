@@ -62,7 +62,11 @@ namespace ArucoUnity
 
       // Editor fields
 
+      [SerializeField]
       private CameraModes cameraMode = CameraModes.VR_960x950_60FPS;
+
+      [SerializeField]
+      private ArucoOvrvisionCameraParameters ovrvisionCameraParameters;
 
       // ArucoCamera properties implementation
 
@@ -164,6 +168,8 @@ namespace ArucoUnity
 
       public CameraModes CameraMode { get { return cameraMode; } set { cameraMode = value; } }
 
+      public ArucoOvrvisionCameraParameters OvrvisionCameraParameters { get { return ovrvisionCameraParameters; } set { ovrvisionCameraParameters = value; } }
+
       // Variables
 
       protected byte[] imageData;
@@ -177,6 +183,12 @@ namespace ArucoUnity
       protected override void Awake()
       {
         base.Awake();
+
+        if (ovrvisionCameraParameters != null)
+        {
+          ovrvisionCameraParameters.ArucoOvrvisionCamera = this;
+        }
+
         ImageCameras = new Camera[CamerasNumber];
         ImageTextures = new Texture2D[CamerasNumber];
       }
@@ -223,6 +235,22 @@ namespace ArucoUnity
         }
         ovSetCamSyncMode(false);
 
+        // Update state
+        IsStarted = true;
+
+        // Update settings
+        if (OvrvisionCameraParameters != null)
+        {
+          if (OvrvisionCameraParameters.SetParametersAtStart)
+          {
+            OvrvisionCameraParameters.SetParametersToCamera();
+          }
+          else
+          {
+            OvrvisionCameraParameters.GetParametersFromCamera();
+          }
+        }
+
         // Configure the cameras textures and planes
         ConfigureCameraTextures();
         if (DisplayImages)
@@ -230,8 +258,7 @@ namespace ArucoUnity
           ConfigureCamerasPlanes();
         }
 
-        // Update state
-        IsStarted = true;
+        // Call observers
         OnStarted();
       }
 
