@@ -78,7 +78,7 @@ namespace ArucoUnity
       /// <summary>
       /// <see cref="ArucoCamera.Name"/>
       /// </summary>
-      public override string Name { get; protected set; }
+      public override string Name { get { return "Ovrvision"; } protected set { } }
 
       /// <summary>
       /// <see cref="ArucoCamera.ImageRotations"/>
