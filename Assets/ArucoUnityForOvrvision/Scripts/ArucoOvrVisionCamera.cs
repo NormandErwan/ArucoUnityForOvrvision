@@ -334,51 +334,52 @@ namespace ArucoUnity
           cameraPlanes = new GameObject[CamerasNumber];
         }
 
-        for (int i = 0; i < CamerasNumber; i++)
+        for (int cameraId = 0; cameraId < CamerasNumber; cameraId++)
         {
-          float CameraPlaneDistance = (CameraParameters != null) ? CameraParameters[i].CameraFy : ImageTextures[i].width;
+          // Use the image texture's width as a default value if there is no camera parameters
+          float CameraPlaneDistance = (CameraParameters != null) ? CameraParameters.CamerasFocalLength[cameraId].y : ImageTextures[cameraId].width;
 
           // Initialize rendering cameras
-          if (ImageCameras[i] == null)
+          if (ImageCameras[cameraId] == null)
           {
-            GameObject camera = (i == COvrvisionUnity.OV_CAMEYE_LEFT) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
+            GameObject camera = (cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
             camera.transform.SetParent(this.transform);
 
-            ImageCameras[i] = camera.AddComponent<Camera>();
-            ImageCameras[i].orthographic = false;
-            ImageCameras[i].clearFlags = CameraClearFlags.SolidColor;
-            ImageCameras[i].backgroundColor = Color.black;
+            ImageCameras[cameraId] = camera.AddComponent<Camera>();
+            ImageCameras[cameraId].orthographic = false;
+            ImageCameras[cameraId].clearFlags = CameraClearFlags.SolidColor;
+            ImageCameras[cameraId].backgroundColor = Color.black;
 
-            ImageCameras[i].stereoTargetEye = (i == COvrvisionUnity.OV_CAMEYE_LEFT) ? StereoTargetEyeMask.Left : StereoTargetEyeMask.Right;
-            ImageCameras[i].cullingMask = ~(1 << ((i == COvrvisionUnity.OV_CAMEYE_LEFT) ? RIGHT_CAMERA_LAYER : LEFT_CAMERA_LAYER)); // Render everything except the other camera plane
+            ImageCameras[cameraId].stereoTargetEye = (cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? StereoTargetEyeMask.Left : StereoTargetEyeMask.Right;
+            ImageCameras[cameraId].cullingMask = ~(1 << ((cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? RIGHT_CAMERA_LAYER : LEFT_CAMERA_LAYER)); // Render everything except the other camera plane
           }
 
           // Configure rendering cameras
           float farClipPlaneNewValueFactor = 1.01f; // To be sure that the camera plane is visible by the camera
-          float vFov = 2f * Mathf.Atan(0.5f * ImageTextures[i].height / CameraPlaneDistance) * Mathf.Rad2Deg;
-          ImageCameras[i].fieldOfView = vFov;
-          ImageCameras[i].farClipPlane = CameraPlaneDistance * farClipPlaneNewValueFactor;
-          ImageCameras[i].aspect = ImageRatios[i];
-          ImageCameras[i].transform.localPosition = Vector3.zero;
-          ImageCameras[i].transform.localRotation = Quaternion.identity;
+          float vFov = 2f * Mathf.Atan(0.5f * ImageTextures[cameraId].height / CameraPlaneDistance) * Mathf.Rad2Deg;
+          ImageCameras[cameraId].fieldOfView = vFov;
+          ImageCameras[cameraId].farClipPlane = CameraPlaneDistance * farClipPlaneNewValueFactor;
+          ImageCameras[cameraId].aspect = ImageRatios[cameraId];
+          ImageCameras[cameraId].transform.localPosition = Vector3.zero;
+          ImageCameras[cameraId].transform.localRotation = Quaternion.identity;
 
           // Initialize the camera planes facing the rendering Unity cameras
-          if (cameraPlanes[i] == null)
+          if (cameraPlanes[cameraId] == null)
           {
-            cameraPlanes[i] = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            cameraPlanes[i].name = "CameraImagePlane";
-            cameraPlanes[i].layer = (i == COvrvisionUnity.OV_CAMEYE_LEFT) ? LEFT_CAMERA_LAYER : RIGHT_CAMERA_LAYER;
-            cameraPlanes[i].transform.parent = ImageCameras[i].transform;
-            cameraPlanes[i].GetComponent<Renderer>().material = Resources.Load("CameraImage") as Material;
+            cameraPlanes[cameraId] = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            cameraPlanes[cameraId].name = "CameraImagePlane";
+            cameraPlanes[cameraId].layer = (cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? LEFT_CAMERA_LAYER : RIGHT_CAMERA_LAYER;
+            cameraPlanes[cameraId].transform.parent = ImageCameras[cameraId].transform;
+            cameraPlanes[cameraId].GetComponent<Renderer>().material = Resources.Load("CameraImage") as Material;
           }
 
           // Initialize the camera planes facing the rendering Unity cameras
-          cameraPlanes[i].GetComponent<MeshFilter>().mesh = ImageMeshes[i];
-          cameraPlanes[i].GetComponent<Renderer>().material.mainTexture = ImageTextures[i];
-          cameraPlanes[i].transform.localPosition = new Vector3(0, 0, CameraPlaneDistance); // TODO: improve with calibration and IPD
-          cameraPlanes[i].transform.rotation = ImageRotations[i];
-          cameraPlanes[i].transform.localScale = new Vector3(ImageTextures[i].width, ImageTextures[i].height, 1.0f);
-          cameraPlanes[i].transform.localScale = Vector3.Scale(cameraPlanes[i].transform.localScale, ImageScalesFrontFacing[i]);
+          cameraPlanes[cameraId].GetComponent<MeshFilter>().mesh = ImageMeshes[cameraId];
+          cameraPlanes[cameraId].GetComponent<Renderer>().material.mainTexture = ImageTextures[cameraId];
+          cameraPlanes[cameraId].transform.localPosition = new Vector3(0, 0, CameraPlaneDistance); // TODO: improve with calibration and IPD
+          cameraPlanes[cameraId].transform.rotation = ImageRotations[cameraId];
+          cameraPlanes[cameraId].transform.localScale = new Vector3(ImageTextures[cameraId].width, ImageTextures[cameraId].height, 1.0f);
+          cameraPlanes[cameraId].transform.localScale = Vector3.Scale(cameraPlanes[cameraId].transform.localScale, ImageScalesFrontFacing[cameraId]);
         }
       }
     }
