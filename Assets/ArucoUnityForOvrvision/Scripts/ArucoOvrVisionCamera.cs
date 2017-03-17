@@ -1,5 +1,6 @@
 ﻿using ArucoUnity.Utility;
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
@@ -67,6 +68,10 @@ namespace ArucoUnity
 
       [SerializeField]
       private ArucoOvrvisionCameraParameters ovrvisionCameraParameters;
+
+      [SerializeField]
+      [Tooltip("The file path to load the camera parameters.")]
+      private string cameraParametersFilePath;
 
       // ArucoCamera properties implementation
 
@@ -170,6 +175,11 @@ namespace ArucoUnity
 
       public ArucoOvrvisionCameraParameters OvrvisionCameraParameters { get { return ovrvisionCameraParameters; } set { ovrvisionCameraParameters = value; } }
 
+      /// <summary>
+      /// The file path to load the camera parameters.
+      /// </summary>
+      public string CameraParametersFilePath { get { return cameraParametersFilePath; } set { cameraParametersFilePath = value; } }
+
       // Variables
 
       protected byte[] imageData;
@@ -205,7 +215,15 @@ namespace ArucoUnity
           return;
         }
 
+        // Update VR tracking
         UnityEngine.VR.InputTracking.Recenter();
+
+        // Try to load the camera parameters
+        if (CameraParametersFilePath != null && CameraParametersFilePath.Length > 0)
+        {
+          string fullCameraParametersFilePath = Path.Combine((Application.isEditor) ? Application.dataPath : Application.persistentDataPath, CameraParametersFilePath);
+          CameraParameters = CameraParameters.LoadFromXmlFile(fullCameraParametersFilePath);
+        }
 
         // Update state
         IsConfigured = true;
