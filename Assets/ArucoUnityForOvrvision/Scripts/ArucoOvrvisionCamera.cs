@@ -8,7 +8,7 @@ namespace ArucoUnity
 {
   namespace Ovrvision
   {
-    public enum CameraModes
+    public enum CameraMode
     {
       Full_2560x1920_15FPS = 0,
       FHD_1920x1080_30FPS,
@@ -21,22 +21,24 @@ namespace ArucoUnity
       USB2_VGA_640x480_30FPS,
     }
 
-    public enum ProcessingModes
+    public enum ProcessingMode
     {
-      DEMOSAIC_REMAP = 0,
-      DEMOSAIC,
-      NONE,
+      DemosaicRemap = 0,
+      Demosaic,
+      None,
     }
     
     public class ArucoOvrvisionCamera : ArucoCamera
     {
       // Constants
 
-      protected const ProcessingModes PROCESSING_MODE = ProcessingModes.DEMOSAIC;
+      protected const ProcessingMode PROCESSING_MODE = ProcessingMode.Demosaic;
       protected const int OVRVISION_LOCATION_ID = 0;
       protected const float OVRVISION_ARSIZE = 1f;
       protected const int LEFT_CAMERA_LAYER = 24;
       protected const int RIGHT_CAMERA_LAYER = 25;
+      protected const int LEFT_CAMERA_ID = 0;
+      protected const int RIGHT_CAMERA_ID = 1;
 
       // Ovrvision plugin functions
 
@@ -64,7 +66,7 @@ namespace ArucoUnity
       // Editor fields
 
       [SerializeField]
-      private CameraModes cameraMode = CameraModes.VR_960x950_60FPS;
+      private CameraMode cameraMode = CameraMode.VR_960x950_60FPS;
 
       [SerializeField]
       private ArucoOvrvisionCameraParameters ovrvisionCameraParameters;
@@ -105,8 +107,8 @@ namespace ArucoUnity
         {
           return new float[]
           {
-            ImageTextures[COvrvisionUnity.OV_CAMEYE_LEFT].width / (float)ImageTextures[COvrvisionUnity.OV_CAMEYE_LEFT].height,
-            ImageTextures[COvrvisionUnity.OV_CAMEYE_RIGHT].width / (float)ImageTextures[COvrvisionUnity.OV_CAMEYE_RIGHT].height
+            ImageTextures[LEFT_CAMERA_ID].width / (float)ImageTextures[LEFT_CAMERA_ID].height,
+            ImageTextures[RIGHT_CAMERA_ID].width / (float)ImageTextures[RIGHT_CAMERA_ID].height
           };
         }
       }
@@ -171,7 +173,7 @@ namespace ArucoUnity
 
       // Properties
 
-      public CameraModes CameraMode { get { return cameraMode; } set { cameraMode = value; } }
+      public CameraMode CameraMode { get { return cameraMode; } set { cameraMode = value; } }
 
       public ArucoOvrvisionCameraParameters OvrvisionCameraParameters { get { return ovrvisionCameraParameters; } set { ovrvisionCameraParameters = value; } }
 
@@ -360,7 +362,7 @@ namespace ArucoUnity
           // Initialize rendering cameras
           if (ImageCameras[cameraId] == null)
           {
-            GameObject camera = (cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
+            GameObject camera = (cameraId == LEFT_CAMERA_ID) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
             camera.transform.SetParent(this.transform);
 
             ImageCameras[cameraId] = camera.AddComponent<Camera>();
@@ -368,8 +370,8 @@ namespace ArucoUnity
             ImageCameras[cameraId].clearFlags = CameraClearFlags.SolidColor;
             ImageCameras[cameraId].backgroundColor = Color.black;
 
-            ImageCameras[cameraId].stereoTargetEye = (cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? StereoTargetEyeMask.Left : StereoTargetEyeMask.Right;
-            ImageCameras[cameraId].cullingMask = ~(1 << ((cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? RIGHT_CAMERA_LAYER : LEFT_CAMERA_LAYER)); // Render everything except the other camera plane
+            ImageCameras[cameraId].stereoTargetEye = (cameraId == LEFT_CAMERA_ID) ? StereoTargetEyeMask.Left : StereoTargetEyeMask.Right;
+            ImageCameras[cameraId].cullingMask = ~(1 << ((cameraId == LEFT_CAMERA_ID) ? RIGHT_CAMERA_LAYER : LEFT_CAMERA_LAYER)); // Render everything except the other camera plane
           }
 
           // Configure rendering cameras
@@ -386,7 +388,7 @@ namespace ArucoUnity
           {
             cameraPlanes[cameraId] = GameObject.CreatePrimitive(PrimitiveType.Quad);
             cameraPlanes[cameraId].name = "CameraImagePlane";
-            cameraPlanes[cameraId].layer = (cameraId == COvrvisionUnity.OV_CAMEYE_LEFT) ? LEFT_CAMERA_LAYER : RIGHT_CAMERA_LAYER;
+            cameraPlanes[cameraId].layer = (cameraId == LEFT_CAMERA_ID) ? LEFT_CAMERA_LAYER : RIGHT_CAMERA_LAYER;
             cameraPlanes[cameraId].transform.parent = ImageCameras[cameraId].transform;
             cameraPlanes[cameraId].GetComponent<Renderer>().material = Resources.Load("CameraImage") as Material;
           }

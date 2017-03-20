@@ -207,27 +207,27 @@ namespace ArucoUnity
         SetParametersToCamera();
       }
 
-      protected int GetCameraModeExposureFactor(CameraModes cameraMode)
+      protected int GetCameraModeExposureFactor(CameraMode cameraMode)
       {
         switch(cameraMode)
         {
-          case CameraModes.Full_2560x1920_15FPS:
+          case CameraMode.Full_2560x1920_15FPS:
             return 480000;
-          case CameraModes.FHD_1920x1080_30FPS:
+          case CameraMode.FHD_1920x1080_30FPS:
             return 570580;
-          case CameraModes.SXGAM_1280x960_45FPS:
+          case CameraMode.SXGAM_1280x960_45FPS:
             return 720113;
-          case CameraModes.VR_960x950_60FPS:
+          case CameraMode.VR_960x950_60FPS:
             return 937157;
-          case CameraModes.WXGA_1280x800_60FPS:
+          case CameraMode.WXGA_1280x800_60FPS:
             return 783274;
-          case CameraModes.VGA_640x480_90FPS:
+          case CameraMode.VGA_640x480_90FPS:
             return 720113;
-          case CameraModes.QVGA_320x240_120FPS:
+          case CameraMode.QVGA_320x240_120FPS:
             return 491520;
-          case CameraModes.USB2_SXGAM_1280x960_15FPS:
+          case CameraMode.USB2_SXGAM_1280x960_15FPS:
             return 240000;
-          case CameraModes.USB2_VGA_640x480_30FPS:
+          case CameraMode.USB2_VGA_640x480_30FPS:
             return 240000;
         }
         return 0;
