@@ -88,17 +88,6 @@ namespace ArucoUnity
       public override string Name { get { return "Ovrvision"; } protected set { } }
 
       /// <summary>
-      /// <see cref="ArucoCamera.ImageRotations"/>
-      /// </summary>
-      public override Quaternion[] ImageRotations
-      {
-        get
-        {
-          return new Quaternion[] { Quaternion.identity, Quaternion.identity };
-        }
-      }
-
-      /// <summary>
       /// <see cref="ArucoCamera.ImageRatios"/>
       /// </summary>
       public override float[] ImageRatios
@@ -144,30 +133,6 @@ namespace ArucoUnity
           imageMesh.RecalculateNormals();
 
           return new Mesh[] { imageMesh, imageMesh };
-        }
-      }
-
-      /// <summary>
-      /// <see cref="ArucoCamera.ImageUvRectFlips"/>
-      /// </summary>
-      public override Rect[] ImageUvRectFlips
-      {
-        get
-        {
-          Rect imageRect = new Rect(0f, 0f, 1f, 1f);
-          return new Rect[] { imageRect, imageRect };
-        }
-      }
-
-      /// <summary>
-      /// <see cref="ArucoCamera.ImageScalesFrontFacing"/>
-      /// </summary>
-      public override Vector3[] ImageScalesFrontFacing
-      {
-        get
-        {
-          Vector3 imageScale = new Vector3(1f, -1f, 1f);
-          return new Vector3[] { imageScale, imageScale };
         }
       }
 
@@ -227,15 +192,11 @@ namespace ArucoUnity
           CameraParameters = CameraParameters.LoadFromXmlFile(fullCameraParametersFilePath);
         }
 
-        // Update state
-        IsConfigured = true;
-        OnConfigured();
+        // Configure the image correct orientation
+        flipHorizontallyImages = false;
+        flipVerticallyImages = true;
 
-        // AutoStart
-        if (AutoStart)
-        {
-          StartCameras();
-        }
+        base.Configure();
       }
 
       /// <summary>
@@ -307,7 +268,6 @@ namespace ArucoUnity
       {
         if (!IsConfigured || !IsStarted)
         {
-          ImagesUpdatedThisFrame = false;
           return;
         }
 
@@ -316,10 +276,8 @@ namespace ArucoUnity
         {
           ovGetCamImageRGB(imageData, i);
           ImageTextures[i].LoadRawTextureData(imageData);
-          ImageTextures[i].Apply(false);
         }
 
-        ImagesUpdatedThisFrame = true;
         OnImagesUpdated();
       }
 
@@ -397,9 +355,8 @@ namespace ArucoUnity
           cameraPlanes[cameraId].GetComponent<MeshFilter>().mesh = ImageMeshes[cameraId];
           cameraPlanes[cameraId].GetComponent<Renderer>().material.mainTexture = ImageTextures[cameraId];
           cameraPlanes[cameraId].transform.localPosition = new Vector3(0, 0, CameraPlaneDistance); // TODO: improve with calibration and IPD
-          cameraPlanes[cameraId].transform.rotation = ImageRotations[cameraId];
+          cameraPlanes[cameraId].transform.rotation = Quaternion.identity;
           cameraPlanes[cameraId].transform.localScale = new Vector3(ImageTextures[cameraId].width, ImageTextures[cameraId].height, 1.0f);
-          cameraPlanes[cameraId].transform.localScale = Vector3.Scale(cameraPlanes[cameraId].transform.localScale, ImageScalesFrontFacing[cameraId]);
         }
       }
     }
