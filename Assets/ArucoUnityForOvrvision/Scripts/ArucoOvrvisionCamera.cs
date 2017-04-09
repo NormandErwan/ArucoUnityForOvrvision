@@ -1,5 +1,4 @@
-﻿using ArucoUnity.Utility;
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -28,7 +27,7 @@ namespace ArucoUnity
       None,
     }
     
-    public class ArucoOvrvisionCamera : ArucoCamera
+    public class ArucoOvrvisionCamera : Cameras.ArucoCamera
     {
       // Constants
 
@@ -80,7 +79,7 @@ namespace ArucoUnity
       /// <summary>
       /// <see cref="ArucoCamera.CamerasNumber"/>
       /// </summary>
-      public override int CamerasNumber { get { return 2; } protected set { } }
+      public override int CameraNumber { get { return 2; } protected set { } }
 
       /// <summary>
       /// <see cref="ArucoCamera.Name"/>
@@ -166,8 +165,8 @@ namespace ArucoUnity
           ovrvisionCameraParameters.ArucoOvrvisionCamera = this;
         }
 
-        ImageCameras = new Camera[CamerasNumber];
-        ImageTextures = new Texture2D[CamerasNumber];
+        ImageCameras = new Camera[CameraNumber];
+        ImageTextures = new Texture2D[CameraNumber];
       }
 
       // ArucoCamera methods
@@ -189,7 +188,7 @@ namespace ArucoUnity
         if (CameraParametersFilePath != null && CameraParametersFilePath.Length > 0)
         {
           string fullCameraParametersFilePath = Path.Combine((Application.isEditor) ? Application.dataPath : Application.persistentDataPath, CameraParametersFilePath);
-          CameraParameters = CameraParameters.LoadFromXmlFile(fullCameraParametersFilePath);
+          CameraParameters = Cameras.CameraParameters.LoadFromXmlFile(fullCameraParametersFilePath);
         }
 
         // Configure the image correct orientation
@@ -272,7 +271,7 @@ namespace ArucoUnity
         }
 
         ovPreStoreCamData((int)PROCESSING_MODE);
-        for (int i = 0; i < CamerasNumber; i++)
+        for (int i = 0; i < CameraNumber; i++)
         {
           ovGetCamImageRGB(imageData, i);
           ImageTextures[i].LoadRawTextureData(imageData);
@@ -291,7 +290,7 @@ namespace ArucoUnity
         int imageWidth  = ovGetImageWidth(),
               imageHeight = ovGetImageHeight();
 
-        for (int i = 0; i < CamerasNumber; i++)
+        for (int i = 0; i < CameraNumber; i++)
         {
           ImageTextures[i] = new Texture2D(imageWidth, imageHeight, TextureFormat.RGB24, false);
           ImageTextures[i].wrapMode = TextureWrapMode.Clamp;
@@ -309,13 +308,13 @@ namespace ArucoUnity
       {
         if (cameraPlanes == null)
         {
-          cameraPlanes = new GameObject[CamerasNumber];
+          cameraPlanes = new GameObject[CameraNumber];
         }
 
-        for (int cameraId = 0; cameraId < CamerasNumber; cameraId++)
+        for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
         {
           // Use the image texture's width as a default value if there is no camera parameters
-          float CameraPlaneDistance = (CameraParameters != null) ? CameraParameters.CamerasFocalLength[cameraId].y : ImageTextures[cameraId].width;
+          float CameraPlaneDistance = (CameraParameters != null) ? CameraParameters.CameraFocalLengths[cameraId].y : ImageTextures[cameraId].width;
 
           // Initialize rendering cameras
           if (ImageCameras[cameraId] == null)
