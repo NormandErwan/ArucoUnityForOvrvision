@@ -1,6 +1,8 @@
-﻿using System;
+﻿using ArucoUnity.Cameras;
+using ArucoUnity.Plugin;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using UnityEngine;
 
 namespace ArucoUnity
@@ -27,7 +29,7 @@ namespace ArucoUnity
       None,
     }
     
-    public class ArucoOvrvisionCamera : Cameras.ArucoCamera
+    public class ArucoOvrvisionCamera : ArucoCamera
     {
       // Constants
 
@@ -143,20 +145,58 @@ namespace ArucoUnity
 
       // Variables
 
-      protected byte[] imageData;
       protected GameObject[] cameraPlanes;
+      protected byte[][] imageCapturedDatas;
+      protected bool newImagesCaptured;
+      protected Thread imageCaptureThread;
+      protected Mutex imageCaptureMutex;
+      protected System.Exception imageCaptureException;
 
       // MonoBehaviour methods
 
       /// <summary>
-      /// <see cref="ArucoCamera.Awake"/>
+      /// Initialize the properties and the internal image capturing thread.
       /// </summary>
       protected override void Awake()
       {
         base.Awake();
 
-        ImageCameras = new Camera[CameraNumber];
-        ImageTextures = new Texture2D[CameraNumber];
+        // Initialize the image correct orientation
+        flipHorizontallyImages = false;
+        flipVerticallyImages = true;
+
+        // Initialize the internal image capturing thread
+        imageCapturedDatas = new byte[CameraNumber][];
+        imageCaptureMutex = new Mutex();
+        imageCaptureThread = new Thread(() =>
+        {
+          try
+          {
+            while (IsConfigured && IsStarted)
+            {
+              imageCaptureMutex.WaitOne();
+              CaptureNewImages();
+              imageCaptureMutex.ReleaseMutex();
+            }
+          }
+          catch (System.Exception e)
+          {
+            imageCaptureException = e;
+            imageCaptureMutex.ReleaseMutex();
+          }
+        });
+      }
+
+      protected override void Start()
+      {
+        base.Started += ArucoOvrvisionCamera_Started;
+        base.Start();
+      }
+
+      protected override void OnDestroy()
+      {
+        base.Started -= ArucoOvrvisionCamera_Started;
+        base.OnDestroy();
       }
 
       // ArucoCamera methods
@@ -171,6 +211,9 @@ namespace ArucoUnity
           return;
         }
 
+        // Reset state
+        IsConfigured = false;
+
         // Update VR tracking
         UnityEngine.VR.InputTracking.Recenter();
 
@@ -178,12 +221,8 @@ namespace ArucoUnity
         if (CameraParametersFilePath != null && CameraParametersFilePath.Length > 0)
         {
           string fullCameraParametersFilePath = Path.Combine((Application.isEditor) ? Application.dataPath : Application.persistentDataPath, CameraParametersFilePath);
-          CameraParameters = Cameras.CameraParameters.LoadFromXmlFile(fullCameraParametersFilePath);
+          CameraParameters = CameraParameters.LoadFromXmlFile(fullCameraParametersFilePath);
         }
-
-        // Configure the image correct orientation
-        flipHorizontallyImages = false;
-        flipVerticallyImages = true;
 
         base.Configure();
       }
@@ -201,22 +240,36 @@ namespace ArucoUnity
         // Open the cameras
         if (ovOpen(ovrvisionLocationId, ovrvisionArSize, (int)CameraMode) != 0)
         {
-          throw new Exception("Unkown error when opening Ovrvision cameras. Try to restart the application.");
+          throw new System.Exception("Unkown error when opening Ovrvision cameras. Try to restart the application.");
         }
         ovSetCamSyncMode(false);
 
-        // Update state
-        IsStarted = true;
-
-        // Configure the cameras textures and planes
-        ConfigureCameraTextures();
+        // Configure the camera textures and the camera planes
+        int width = ovGetImageWidth(), height = ovGetImageHeight();
+        for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
+        {
+          ImageTextures[cameraId] = new Texture2D(width, height, TextureFormat.RGB24, false);
+          ImageTextures[cameraId].wrapMode = TextureWrapMode.Clamp;
+        }
         if (DisplayImages)
         {
           ConfigureCamerasPlanes();
         }
 
-        // Call observers
         OnStarted();
+      }
+
+      private void ArucoOvrvisionCamera_Started()
+      {
+        // Initialize the image datas of the capturing thread
+        for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
+        {
+          imageCapturedDatas[cameraId] = new byte[ImageDataSizes[cameraId]];
+        }
+
+        // Start the image capturing thread
+        newImagesCaptured = false;
+        imageCaptureThread.Start();
       }
 
       /// <summary>
@@ -229,53 +282,71 @@ namespace ArucoUnity
           return;
         }
 
+        IsStarted = false; // This flag stops the image capturing thread
+
+        imageCaptureMutex.WaitOne();
         if (ovClose() != 0)
         {
-          throw new Exception("Unkown error when closing Ovrvision cameras. Try to restart the application.");
+          throw new System.Exception("Unkown error when closing Ovrvision cameras. Try to restart the application.");
         }
-        IsStarted = false;
+        imageCaptureMutex.ReleaseMutex();
+
         OnStopped();
       }
 
       /// <summary>
-      /// Get the current frame from the ovrvision plugin and update the textures.
+      /// Get the current frame from the ovrvision plugin.
       /// </summary>
       protected override void UpdateCameraImages()
       {
-        if (!IsConfigured || !IsStarted)
+        System.Exception captureException = null;
+
+        imageCaptureMutex.WaitOne();
+
+        // Check for exception in the capture image thread
+        if (imageCaptureException != null)
         {
-          return;
+          captureException = imageCaptureException;
+          imageCaptureException = null;
+        }
+        // Check for new frame images
+        else if (newImagesCaptured)
+        {
+          for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
+          {
+            System.Array.Copy(imageCapturedDatas[cameraId], ImageDatas[cameraId], ImageDataSizes[cameraId]);
+          }
+          newImagesCaptured = false;
         }
 
-        ovPreStoreCamData((int)processingMode);
-        for (int i = 0; i < CameraNumber; i++)
-        {
-          ovGetCamImageRGB(imageData, i);
-          ImageTextures[i].LoadRawTextureData(imageData);
-        }
+        imageCaptureMutex.ReleaseMutex();
 
-        OnImagesUpdated();
+        // Stop if exception in the capture image thread
+        if (captureException != null)
+        {
+          OnStopped();
+          throw captureException;
+        }
+        // Execute the OnImagesUpdated if new images has been updated this frame
+        else if (!newImagesCaptured)
+        {
+          OnImagesUpdated();
+        }
       }
 
       // Methods
 
-      /// <summary>
-      /// Create the textures of the cameras' images and the images' data buffer.
-      /// </summary>
-      protected void ConfigureCameraTextures()
+      protected void CaptureNewImages()
       {
-        int imageWidth  = ovGetImageWidth(),
-              imageHeight = ovGetImageHeight();
-
-        for (int i = 0; i < CameraNumber; i++)
+        if (!newImagesCaptured)
         {
-          ImageTextures[i] = new Texture2D(imageWidth, imageHeight, TextureFormat.RGB24, false);
-          ImageTextures[i].wrapMode = TextureWrapMode.Clamp;
+          ovPreStoreCamData((int)processingMode);
+          for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
+          {
+            ovGetCamImageRGB(imageCapturedDatas[cameraId], cameraId);
+          }
+          newImagesCaptured = true;
         }
-
-        int pixelSize = 3;
-        int imageDataSize = imageWidth * imageHeight * pixelSize;
-        imageData = new byte[imageDataSize];
       }
 
       /// <summary>
@@ -288,51 +359,66 @@ namespace ArucoUnity
           cameraPlanes = new GameObject[CameraNumber];
         }
 
+        // Configure cameras and planes
         for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
         {
-          // Use the image texture's width as a default value if there is no camera parameters
-          float CameraPlaneDistance = (CameraParameters != null) ? CameraParameters.CameraFocalLengths[cameraId].y : ImageTextures[cameraId].width;
-
-          // Initialize rendering cameras
           if (ImageCameras[cameraId] == null)
           {
-            GameObject camera = (cameraId == leftCameraId) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
-            camera.transform.SetParent(this.transform);
+            // Set the transform between the two rendering Unity cameras
+            GameObject cameraParent = (cameraId == leftCameraId) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
+            cameraParent.transform.SetParent(this.transform);
 
+            if (CameraParameters != null && CameraParameters.StereoCameraParametersList.Length > 0)
+            {
+              StereoCameraParameters stereoCameraParameters = CameraParameters.StereoCameraParametersList[0];
+              if (stereoCameraParameters.CameraIds[0] == cameraId)
+              {
+                cameraParent.transform.localPosition = stereoCameraParameters.TranslationVector.ToPosition();
+                cameraParent.transform.localRotation = stereoCameraParameters.RotationVector.ToRotation();
+              }
+            }
+
+            // Initialize the rendering cameras
+            GameObject camera = new GameObject("Camera");
+            camera.transform.SetParent(cameraParent.transform);
             ImageCameras[cameraId] = camera.AddComponent<Camera>();
             ImageCameras[cameraId].orthographic = false;
             ImageCameras[cameraId].clearFlags = CameraClearFlags.SolidColor;
             ImageCameras[cameraId].backgroundColor = Color.black;
-
             ImageCameras[cameraId].stereoTargetEye = (cameraId == leftCameraId) ? StereoTargetEyeMask.Left : StereoTargetEyeMask.Right;
             ImageCameras[cameraId].cullingMask = ~(1 << ((cameraId == leftCameraId) ? rightCameraLayer : leftCameraLayer)); // Render everything except the other camera plane
           }
 
-          // Configure rendering cameras
+          // Configure the rendering cameras
+          float CameraPlaneDistance = ImageTextures[cameraId].height / (2f * Mathf.Tan(ImageCameras[cameraId].fieldOfView * Mathf.Deg2Rad / 2f));
+          CameraPlaneDistance *= (ImageRatios[cameraId] / ImageCameras[cameraId].aspect); // Adapt the image size to the device screen
           float farClipPlaneNewValueFactor = 1.01f; // To be sure that the camera plane is visible by the camera
-          float vFov = 2f * Mathf.Atan(0.5f * ImageTextures[cameraId].height / CameraPlaneDistance) * Mathf.Rad2Deg;
-          ImageCameras[cameraId].fieldOfView = vFov;
+          ImageCameras[cameraId].nearClipPlane = 0.1f;
           ImageCameras[cameraId].farClipPlane = CameraPlaneDistance * farClipPlaneNewValueFactor;
-          ImageCameras[cameraId].aspect = ImageRatios[cameraId];
-          ImageCameras[cameraId].transform.localPosition = Vector3.zero;
-          ImageCameras[cameraId].transform.localRotation = Quaternion.identity;
 
-          // Initialize the camera planes facing the rendering Unity cameras
+          // Initialize and configure the camera planes facing the rendering cameras
           if (cameraPlanes[cameraId] == null)
           {
             cameraPlanes[cameraId] = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            cameraPlanes[cameraId].name = "CameraImagePlane";
+            cameraPlanes[cameraId].name = "ImagePlane";
             cameraPlanes[cameraId].layer = (cameraId == leftCameraId) ? leftCameraLayer : rightCameraLayer;
             cameraPlanes[cameraId].transform.parent = ImageCameras[cameraId].transform;
             cameraPlanes[cameraId].GetComponent<Renderer>().material = Resources.Load("CameraImage") as Material;
           }
-
-          // Initialize the camera planes facing the rendering Unity cameras
           cameraPlanes[cameraId].GetComponent<MeshFilter>().mesh = ImageMeshes[cameraId];
           cameraPlanes[cameraId].GetComponent<Renderer>().material.mainTexture = ImageTextures[cameraId];
-          cameraPlanes[cameraId].transform.localPosition = new Vector3(0, 0, CameraPlaneDistance); // TODO: improve with calibration and IPD
-          cameraPlanes[cameraId].transform.rotation = Quaternion.identity;
+          cameraPlanes[cameraId].transform.localPosition = new Vector3(0, 0, CameraPlaneDistance);
+          cameraPlanes[cameraId].transform.localRotation = Quaternion.identity;
           cameraPlanes[cameraId].transform.localScale = new Vector3(ImageTextures[cameraId].width, ImageTextures[cameraId].height, 1.0f);
+
+          // Compute the new camera matrix for rectification
+          if (CameraParameters != null && CameraParameters.StereoCameraParametersList.Length > 0)
+          {
+            float fx = ImageTextures[cameraId].height / (2f * Mathf.Tan(ImageCameras[cameraId].fieldOfView * Mathf.Deg2Rad / 2f));
+            CameraParameters.StereoCameraParametersList[0].NewCameraMatrices[cameraId] = new Cv.Mat(3, 3, Cv.Type.CV_64F,
+              new double[9] { fx, 0, ImageTextures[cameraId].width / 2, 0, fx, ImageTextures[cameraId].height / 2, 0, 0, 1 })
+              .Clone();
+          }
         }
       }
     }
