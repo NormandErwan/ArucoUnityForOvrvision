@@ -7,6 +7,23 @@ namespace ArucoUnity
   {
     public class ArucoOvrvisionCameraParameters : MonoBehaviour
     {
+      // Constants
+
+      protected const int exposureMin = 0;
+      protected const int exposureMax = 32767;
+      protected const int exposurePerSecondMin = 25;
+      protected const int exposurePerSecondMax = 240;
+      protected const int gainMin = 0;
+      protected const int gainMax = 47;
+      protected const int blackLightCompensationMin = 0;
+      protected const int blackLightCompensationMax = 1023;
+      protected const int whiteBalanceRedMin = 0;
+      protected const int whiteBalanceRedMax = 4095;
+      protected const int whiteBalanceGreenMin = 0;
+      protected const int whiteBalanceGreenMax = 4095;
+      protected const int whiteBalanceBlueMin = 0;
+      protected const int whiteBalanceBlueMax = 4095;
+
       // Ovrvision plugin functions
 
       [DllImport("ovrvision", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
@@ -54,57 +71,40 @@ namespace ArucoUnity
       [DllImport("ovrvision", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
       static extern void ovSetWhiteBalanceB(int value);
 
-      // Constants
-
-      protected const int EXPOSURE_MIN = 0;
-      protected const int EXPOSURE_MAX = 32767;
-      protected const int EXPOSURE_PER_SECOND_MIN = 25;
-      protected const int EXPOSURE_PER_SECOND_MAX = 240;
-      protected const int GAIN_MIN = 0;
-      protected const int GAIN_MAX = 47;
-      protected const int BLACK_LIGHT_COMPENSATION_MIN = 0;
-      protected const int BLACK_LIGHT_COMPENSATION_MAX = 1023;
-      protected const int WHITE_BALANCE_RED_MIN = 0;
-      protected const int WHITE_BALANCE_RED_MAX = 4095;
-      protected const int WHITE_BALANCE_GREEN_MIN = 0;
-      protected const int WHITE_BALANCE_GREEN_MAX = 4095;
-      protected const int WHITE_BALANCE_BLUE_MIN = 0;
-      protected const int WHITE_BALANCE_BLUE_MAX = 4095;
-
       // Editor fields
 
       [SerializeField]
       private bool setParametersAtStart = false;
 
       [SerializeField]
-      [Range(EXPOSURE_MIN, EXPOSURE_MAX)]
+      [Range(exposureMin, exposureMax)]
       private int exposure = 12960;
 
       [SerializeField]
-      [Range(EXPOSURE_PER_SECOND_MIN, EXPOSURE_PER_SECOND_MAX)]
+      [Range(exposurePerSecondMin, exposurePerSecondMax)]
       private int exposuresPerSecond;
 
       [SerializeField]
-      [Range(GAIN_MIN, GAIN_MAX)]
+      [Range(gainMin, gainMax)]
       private int gain = 8;
 
       [SerializeField]
-      [Range(BLACK_LIGHT_COMPENSATION_MIN, BLACK_LIGHT_COMPENSATION_MAX)]
+      [Range(blackLightCompensationMin, blackLightCompensationMax)]
       private int blacklightCompensation = 32;
 
       [SerializeField]
       private bool whiteBalanceAuto = true;
 
       [SerializeField]
-      [Range(WHITE_BALANCE_RED_MIN, WHITE_BALANCE_RED_MAX)]
+      [Range(whiteBalanceRedMin, whiteBalanceRedMax)]
       private int whiteBalanceRed = 1474;
 
       [SerializeField]
-      [Range(WHITE_BALANCE_GREEN_MIN, WHITE_BALANCE_GREEN_MAX)]
+      [Range(whiteBalanceGreenMin, whiteBalanceGreenMax)]
       private int whiteBalanceGreen = 1024;
 
       [SerializeField]
-      [Range(WHITE_BALANCE_BLUE_MIN, WHITE_BALANCE_BLUE_MAX)]
+      [Range(whiteBalanceBlueMin, whiteBalanceBlueMax)]
       private int whiteBalanceBlue = 1738;
 
       // Properties
@@ -116,25 +116,25 @@ namespace ArucoUnity
       public int Exposure
       {
         get { return exposure; }
-        set { exposure = Mathf.Clamp(value, EXPOSURE_MIN, EXPOSURE_MAX); }
+        set { exposure = Mathf.Clamp(value, exposureMin, exposureMax); }
       }
 
       public int ExposuresPerSecond
       {
         get { return exposuresPerSecond; }
-        set { exposuresPerSecond = Mathf.Clamp(value, EXPOSURE_PER_SECOND_MIN, EXPOSURE_PER_SECOND_MAX); }
+        set { exposuresPerSecond = Mathf.Clamp(value, exposurePerSecondMin, exposurePerSecondMax); }
       }
 
       public int Gain
       {
         get { return gain; }
-        set { gain = Mathf.Clamp(value, GAIN_MIN, GAIN_MAX); }
+        set { gain = Mathf.Clamp(value, gainMin, gainMax); }
       }
 
       public int BlackLightCompensation
       {
         get { return blacklightCompensation; }
-        set { blacklightCompensation = Mathf.Clamp(value, BLACK_LIGHT_COMPENSATION_MIN, BLACK_LIGHT_COMPENSATION_MAX); }
+        set { blacklightCompensation = Mathf.Clamp(value, blackLightCompensationMin, blackLightCompensationMax); }
       }
 
       public bool WhiteBalanceAuto { get { return whiteBalanceAuto; } set { whiteBalanceAuto = value; } }
@@ -142,19 +142,19 @@ namespace ArucoUnity
       public int WhiteBalanceRed
       {
         get { return whiteBalanceRed; }
-        set { whiteBalanceRed = Mathf.Clamp(value, WHITE_BALANCE_RED_MIN, WHITE_BALANCE_RED_MAX); }
+        set { whiteBalanceRed = Mathf.Clamp(value, whiteBalanceRedMin, whiteBalanceRedMax); }
       }
 
       public int WhiteBalanceGreen
       {
         get { return whiteBalanceGreen; }
-        set { whiteBalanceGreen = Mathf.Clamp(value, WHITE_BALANCE_GREEN_MIN, WHITE_BALANCE_GREEN_MAX); }
+        set { whiteBalanceGreen = Mathf.Clamp(value, whiteBalanceGreenMin, whiteBalanceGreenMax); }
       }
 
       public int WhiteBalanceBlue
       {
         get { return whiteBalanceBlue; }
-        set { whiteBalanceBlue = Mathf.Clamp(value, WHITE_BALANCE_BLUE_MIN, WHITE_BALANCE_BLUE_MAX); }
+        set { whiteBalanceBlue = Mathf.Clamp(value, whiteBalanceBlueMin, whiteBalanceBlueMax); }
       }
 
       // Methods

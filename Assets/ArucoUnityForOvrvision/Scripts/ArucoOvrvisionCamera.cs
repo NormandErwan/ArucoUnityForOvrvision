@@ -31,13 +31,13 @@ namespace ArucoUnity
     {
       // Constants
 
-      protected const ProcessingMode PROCESSING_MODE = ProcessingMode.Demosaic;
-      protected const int OVRVISION_LOCATION_ID = 0;
-      protected const float OVRVISION_ARSIZE = 1f;
-      protected const int LEFT_CAMERA_LAYER = 24;
-      protected const int RIGHT_CAMERA_LAYER = 25;
-      protected const int LEFT_CAMERA_ID = 0;
-      protected const int RIGHT_CAMERA_ID = 1;
+      protected const ProcessingMode processingMode = ProcessingMode.Demosaic;
+      protected const int ovrvisionLocationId = 0;
+      protected const float ovrvisionArSize = 1f;
+      protected const int leftCameraLayer = 24;
+      protected const int rightCameraLayer = 25;
+      protected const int leftCameraId = 0;
+      protected const int rightCameraId = 1;
 
       // Ovrvision plugin functions
 
@@ -95,8 +95,8 @@ namespace ArucoUnity
         {
           return new float[]
           {
-            ImageTextures[LEFT_CAMERA_ID].width / (float)ImageTextures[LEFT_CAMERA_ID].height,
-            ImageTextures[RIGHT_CAMERA_ID].width / (float)ImageTextures[RIGHT_CAMERA_ID].height
+            ImageTextures[leftCameraId].width / (float)ImageTextures[leftCameraId].height,
+            ImageTextures[rightCameraId].width / (float)ImageTextures[rightCameraId].height
           };
         }
       }
@@ -209,7 +209,7 @@ namespace ArucoUnity
         }
 
         // Open the cameras
-        if (ovOpen(OVRVISION_LOCATION_ID, OVRVISION_ARSIZE, (int)CameraMode) != 0)
+        if (ovOpen(ovrvisionLocationId, ovrvisionArSize, (int)CameraMode) != 0)
         {
           throw new Exception("Unkown error when opening Ovrvision cameras. Try to restart the application.");
         }
@@ -270,7 +270,7 @@ namespace ArucoUnity
           return;
         }
 
-        ovPreStoreCamData((int)PROCESSING_MODE);
+        ovPreStoreCamData((int)processingMode);
         for (int i = 0; i < CameraNumber; i++)
         {
           ovGetCamImageRGB(imageData, i);
@@ -319,7 +319,7 @@ namespace ArucoUnity
           // Initialize rendering cameras
           if (ImageCameras[cameraId] == null)
           {
-            GameObject camera = (cameraId == LEFT_CAMERA_ID) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
+            GameObject camera = (cameraId == leftCameraId) ? new GameObject("LeftEyeCamera") : new GameObject("RightEyeCamera");
             camera.transform.SetParent(this.transform);
 
             ImageCameras[cameraId] = camera.AddComponent<Camera>();
@@ -327,8 +327,8 @@ namespace ArucoUnity
             ImageCameras[cameraId].clearFlags = CameraClearFlags.SolidColor;
             ImageCameras[cameraId].backgroundColor = Color.black;
 
-            ImageCameras[cameraId].stereoTargetEye = (cameraId == LEFT_CAMERA_ID) ? StereoTargetEyeMask.Left : StereoTargetEyeMask.Right;
-            ImageCameras[cameraId].cullingMask = ~(1 << ((cameraId == LEFT_CAMERA_ID) ? RIGHT_CAMERA_LAYER : LEFT_CAMERA_LAYER)); // Render everything except the other camera plane
+            ImageCameras[cameraId].stereoTargetEye = (cameraId == leftCameraId) ? StereoTargetEyeMask.Left : StereoTargetEyeMask.Right;
+            ImageCameras[cameraId].cullingMask = ~(1 << ((cameraId == leftCameraId) ? rightCameraLayer : leftCameraLayer)); // Render everything except the other camera plane
           }
 
           // Configure rendering cameras
@@ -345,7 +345,7 @@ namespace ArucoUnity
           {
             cameraPlanes[cameraId] = GameObject.CreatePrimitive(PrimitiveType.Quad);
             cameraPlanes[cameraId].name = "CameraImagePlane";
-            cameraPlanes[cameraId].layer = (cameraId == LEFT_CAMERA_ID) ? LEFT_CAMERA_LAYER : RIGHT_CAMERA_LAYER;
+            cameraPlanes[cameraId].layer = (cameraId == leftCameraId) ? leftCameraLayer : rightCameraLayer;
             cameraPlanes[cameraId].transform.parent = ImageCameras[cameraId].transform;
             cameraPlanes[cameraId].GetComponent<Renderer>().material = Resources.Load("CameraImage") as Material;
           }
