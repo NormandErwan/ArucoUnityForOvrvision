@@ -74,6 +74,9 @@ namespace ArucoUnity
       // Editor fields
 
       [SerializeField]
+      private ArucoOvrvisionCamera arucoOvrvisionCamera;
+
+      [SerializeField]
       private bool setParametersAtStart = false;
 
       [SerializeField]
@@ -109,7 +112,7 @@ namespace ArucoUnity
 
       // Properties
 
-      public ArucoOvrvisionCamera ArucoOvrvisionCamera { get; set; }
+      public ArucoOvrvisionCamera ArucoOvrvisionCamera { get { return arucoOvrvisionCamera; } set { arucoOvrvisionCamera = value; } }
 
       public bool SetParametersAtStart { get { return setParametersAtStart; } set { setParametersAtStart = value; } }
 
@@ -157,6 +160,20 @@ namespace ArucoUnity
         set { whiteBalanceBlue = Mathf.Clamp(value, whiteBalanceBlueMin, whiteBalanceBlueMax); }
       }
 
+      // MonoBehaviour methods
+
+      protected void Start()
+      {
+        if (ArucoOvrvisionCamera != null)
+        {
+          if (ArucoOvrvisionCamera.IsStarted)
+          {
+            ConfigureCameraParameters();
+          }
+          ArucoOvrvisionCamera.Started += ConfigureCameraParameters;
+        }
+      }
+
       // Methods
 
       public void GetParametersFromCamera()
@@ -202,9 +219,16 @@ namespace ArucoUnity
         GetParametersFromCamera();
       }
 
-      protected void OnValidate()
+      protected void ConfigureCameraParameters()
       {
-        SetParametersToCamera();
+        if (SetParametersAtStart)
+        {
+          SetParametersToCamera();
+        }
+        else
+        {
+          GetParametersFromCamera();
+        }
       }
 
       protected int GetCameraModeExposureFactor(CameraMode cameraMode)

@@ -68,9 +68,6 @@ namespace ArucoUnity
       private CameraMode cameraMode = CameraMode.VR_960x950_60FPS;
 
       [SerializeField]
-      private ArucoOvrvisionCameraParameters ovrvisionCameraParameters;
-
-      [SerializeField]
       [Tooltip("The file path to load the camera parameters.")]
       private string cameraParametersFilePath;
 
@@ -139,8 +136,6 @@ namespace ArucoUnity
 
       public CameraMode CameraMode { get { return cameraMode; } set { cameraMode = value; } }
 
-      public ArucoOvrvisionCameraParameters OvrvisionCameraParameters { get { return ovrvisionCameraParameters; } set { ovrvisionCameraParameters = value; } }
-
       /// <summary>
       /// The file path to load the camera parameters.
       /// </summary>
@@ -159,11 +154,6 @@ namespace ArucoUnity
       protected override void Awake()
       {
         base.Awake();
-
-        if (ovrvisionCameraParameters != null)
-        {
-          ovrvisionCameraParameters.ArucoOvrvisionCamera = this;
-        }
 
         ImageCameras = new Camera[CameraNumber];
         ImageTextures = new Texture2D[CameraNumber];
@@ -217,19 +207,6 @@ namespace ArucoUnity
 
         // Update state
         IsStarted = true;
-
-        // Update settings
-        if (OvrvisionCameraParameters != null)
-        {
-          if (OvrvisionCameraParameters.SetParametersAtStart)
-          {
-            OvrvisionCameraParameters.SetParametersToCamera();
-          }
-          else
-          {
-            OvrvisionCameraParameters.GetParametersFromCamera();
-          }
-        }
 
         // Configure the cameras textures and planes
         ConfigureCameraTextures();
