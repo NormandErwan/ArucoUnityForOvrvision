@@ -1,4 +1,5 @@
 ﻿using ArucoUnity.Cameras;
+using ArucoUnity.Cameras.Parameters;
 using ArucoUnity.Plugin;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -215,7 +216,7 @@ namespace ArucoUnity
         IsConfigured = false;
 
         // Update VR tracking
-        UnityEngine.VR.InputTracking.Recenter();
+        UnityEngine.XR.InputTracking.Recenter();
 
         // Try to load the camera parameters
         if (CameraParametersFilePath != null && CameraParametersFilePath.Length > 0)
