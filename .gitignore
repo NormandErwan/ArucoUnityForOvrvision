@@ -16,6 +16,7 @@
 **/Temp/
 **/Library/
 **/Builds/
+**/Build/
 **/Assets/Plugins*
 **/*.sln
 **/*.csproj
