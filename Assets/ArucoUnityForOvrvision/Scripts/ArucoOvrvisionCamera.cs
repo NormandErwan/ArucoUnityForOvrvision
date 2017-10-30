@@ -99,40 +99,6 @@ namespace ArucoUnity.Ovrvision
       }
     }
 
-    /// <summary>
-    /// <see cref="ArucoCamera.ImageMeshes"/>
-    /// </summary>
-    public override Mesh[] ImageMeshes
-    {
-      get
-      {
-        Mesh imageMesh = new Mesh();
-
-        imageMesh.vertices = new Vector3[]
-        {
-            new Vector3(-0.5f, -0.5f, 0.0f),
-            new Vector3( 0.5f,  0.5f, 0.0f),
-            new Vector3( 0.5f, -0.5f, 0.0f),
-            new Vector3(-0.5f,  0.5f, 0.0f)
-        };
-        imageMesh.triangles = new int[]
-        {
-            0, 1, 2,
-            1, 0, 3
-        };
-        imageMesh.uv = new Vector2[]
-        {
-            new Vector2(0.0f, 0.0f),
-            new Vector2(1.0f, 1.0f),
-            new Vector2(1.0f, 0.0f),
-            new Vector2(0.0f, 1.0f)
-        };
-        imageMesh.RecalculateNormals();
-
-        return new Mesh[] { imageMesh, imageMesh };
-      }
-    }
-
     // Properties
 
     public CameraMode CameraMode { get { return cameraMode; } set { cameraMode = value; } }
@@ -404,7 +370,6 @@ namespace ArucoUnity.Ovrvision
           cameraPlanes[cameraId].transform.parent = ImageCameras[cameraId].transform;
           cameraPlanes[cameraId].GetComponent<Renderer>().material = Resources.Load("CameraImage") as Material;
         }
-        cameraPlanes[cameraId].GetComponent<MeshFilter>().mesh = ImageMeshes[cameraId];
         cameraPlanes[cameraId].GetComponent<Renderer>().material.mainTexture = ImageTextures[cameraId];
         cameraPlanes[cameraId].transform.localPosition = new Vector3(0, 0, CameraPlaneDistance);
         cameraPlanes[cameraId].transform.localRotation = Quaternion.identity;
