@@ -442,14 +442,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   arucoOvrvisionCamera: {fileID: 114687056584424430}
   setParametersAtStart: 1
-  exposure: 6000
+  exposure: 4000
   exposuresPerSecond: 240
-  gain: 5
-  blacklightCompensation: 40
+  gain: 6
+  blacklightCompensation: 50
   whiteBalanceAuto: 0
-  whiteBalanceRed: 3000
-  whiteBalanceGreen: 2500
-  whiteBalanceBlue: 4000
+  whiteBalanceRed: 1250
+  whiteBalanceGreen: 1050
+  whiteBalanceBlue: 1750
 --- !u!114 &114687056584424430
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -465,7 +465,7 @@ MonoBehaviour:
   displayImages: 1
   autoUndistortWithCameraParameters: 1
   undistortionType: 1
-  cameraMode: 3
+  cameraMode: 2
   cameraParametersFilePath: ArucoUnityForOvrvision\Calibrations\Ovrvision.xml
   leftCameraEye: {fileID: 114033652536505122}
   rightCameraEye: {fileID: 114871930228987802}
