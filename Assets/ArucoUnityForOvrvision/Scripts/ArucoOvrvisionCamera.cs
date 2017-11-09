@@ -108,12 +108,12 @@ namespace ArucoUnity.Ovrvision
     // Properties
 
     /// <summary>
-    /// The mode to use with the Ovrvision cameras.
+    /// Gets or sets the mode to use with the Ovrvision cameras.
     /// </summary>
     public CameraMode CameraMode { get { return cameraMode; } set { cameraMode = value; } }
 
     /// <summary>
-    /// The file path to load the camera parameters.
+    /// Gets or sets the file path to load the camera parameters.
     /// </summary>
     public string CameraParametersFilePath { get { return cameraParametersFilePath; } set { cameraParametersFilePath = value; } }
 
@@ -133,7 +133,7 @@ namespace ArucoUnity.Ovrvision
     // MonoBehaviour methods
 
     /// <summary>
-    /// Initialize the properties and the internal image capturing thread.
+    /// Initializes the properties and the internal image capturing thread.
     /// </summary>
     protected override void Awake()
     {
@@ -168,28 +168,10 @@ namespace ArucoUnity.Ovrvision
       });
     }
 
-    /// <summary>
-    /// Subscribes to events.
-    /// </summary>
-    protected override void Start()
-    {
-      base.Started += ArucoOvrvisionCamera_Started;
-      base.Start();
-    }
-
-    /// <summary>
-    /// Unsubscribes from events.
-    /// </summary>
-    protected override void OnDestroy()
-    {
-      base.Started -= ArucoOvrvisionCamera_Started;
-      base.OnDestroy();
-    }
-
     // ArucoCamera methods
 
     /// <summary>
-    /// Configure the VR input tracking, the Ovrvision plugin, and auto-start the cameras. The cameras need to be stopped before configured.
+    /// Configures the VR input tracking, the Ovrvision plugin, and auto-start the cameras. The cameras need to be stopped before configured.
     /// </summary>
     public override void Configure()
     {
@@ -244,10 +226,7 @@ namespace ArucoUnity.Ovrvision
       }
 
       OnStarted();
-    }
 
-    private void ArucoOvrvisionCamera_Started()
-    {
       // Initialize the image datas of the capturing thread
       for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
       {
@@ -260,7 +239,7 @@ namespace ArucoUnity.Ovrvision
     }
 
     /// <summary>
-    /// Stop the cameras.
+    /// Stops the cameras and the image capturing thread.
     /// </summary>
     public override void StopCameras()
     {
@@ -282,7 +261,7 @@ namespace ArucoUnity.Ovrvision
     }
 
     /// <summary>
-    /// Check if there was an exception in the capturing frame. If not, retrieve the frames to <see cref="ImageDatas"/>.
+    /// Checks if there was an exception in the capturing frame. If not, retrieve the frames to <see cref="ImageDatas"/>.
     /// </summary>
     protected override void UpdateCameraImages()
     {
@@ -318,7 +297,7 @@ namespace ArucoUnity.Ovrvision
     // Methods
 
     /// <summary>
-    /// Get the current frame from the ovrvision cameras in the capturing thread.
+    /// Gets the current frame from the Ovrvision cameras in the capturing thread.
     /// </summary>
     protected void CaptureNewImages()
     {
