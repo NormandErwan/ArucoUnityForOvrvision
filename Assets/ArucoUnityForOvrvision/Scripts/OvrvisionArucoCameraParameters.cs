@@ -5,7 +5,7 @@ namespace ArucoUnity
 {
   namespace Ovrvision
   {
-    public class ArucoOvrvisionCameraParameters : MonoBehaviour
+    public class OvrvisionArucoCameraParameters : MonoBehaviour
     {
       // Constants
 
@@ -74,7 +74,7 @@ namespace ArucoUnity
       // Editor fields
 
       [SerializeField]
-      private ArucoOvrvisionCamera arucoOvrvisionCamera;
+      private OvrvisionArucoCamera ovrvisionArucoCamera;
 
       [SerializeField]
       private bool setParametersAtStart = false;
@@ -112,7 +112,7 @@ namespace ArucoUnity
 
       // Properties
 
-      public ArucoOvrvisionCamera ArucoOvrvisionCamera { get { return arucoOvrvisionCamera; } set { arucoOvrvisionCamera = value; } }
+      public OvrvisionArucoCamera OvrvisionArucoCamera { get { return ovrvisionArucoCamera; } set { ovrvisionArucoCamera = value; } }
 
       public bool SetParametersAtStart { get { return setParametersAtStart; } set { setParametersAtStart = value; } }
 
@@ -164,13 +164,13 @@ namespace ArucoUnity
 
       protected void Start()
       {
-        if (ArucoOvrvisionCamera != null)
+        if (OvrvisionArucoCamera != null)
         {
-          if (ArucoOvrvisionCamera.IsStarted)
+          if (OvrvisionArucoCamera.IsStarted)
           {
             ConfigureCameraParameters();
           }
-          ArucoOvrvisionCamera.Started += ConfigureCameraParameters;
+          OvrvisionArucoCamera.Started += ConfigureCameraParameters;
         }
       }
 
@@ -178,10 +178,10 @@ namespace ArucoUnity
 
       public void GetParametersFromCamera()
       {
-        if (ArucoOvrvisionCamera != null && ArucoOvrvisionCamera.IsStarted)
+        if (OvrvisionArucoCamera != null && OvrvisionArucoCamera.IsStarted)
         {
           exposure = ovGetExposure();
-          exposuresPerSecond = GetCameraModeExposureFactor(ArucoOvrvisionCamera.CameraMode) / exposure;
+          exposuresPerSecond = GetCameraModeExposureFactor(OvrvisionArucoCamera.CameraMode) / exposure;
           gain = ovGetGain();
           blacklightCompensation = ovGetBLC();
           whiteBalanceAuto = ovGetWhiteBalanceAuto();
@@ -194,10 +194,10 @@ namespace ArucoUnity
       public void SetParametersToCamera()
       {
         // Set the updated parameters
-        if (ArucoOvrvisionCamera != null && ArucoOvrvisionCamera.IsStarted)
+        if (OvrvisionArucoCamera != null && OvrvisionArucoCamera.IsStarted)
         {
           int currentExposure = ovGetExposure();
-          int currentExposuresPerSecond = GetCameraModeExposureFactor(ArucoOvrvisionCamera.CameraMode) / exposure;
+          int currentExposuresPerSecond = GetCameraModeExposureFactor(OvrvisionArucoCamera.CameraMode) / exposure;
           if (exposure != currentExposure)
           {
             ovSetExposure(exposure);
