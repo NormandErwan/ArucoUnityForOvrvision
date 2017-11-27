@@ -101,6 +101,8 @@ namespace ArucoUnity.Ovrvision
       imageCapturedDatas = new byte[CameraNumber][];
 
       InputTracking.Recenter();
+
+      OnConfigured();
     }
 
     /// <summary>
