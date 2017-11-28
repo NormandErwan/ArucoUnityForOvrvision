@@ -80,6 +80,7 @@ namespace ArucoUnity.Ovrvision
 
     // Variables
 
+    protected bool camerasOpened = false;
     protected byte[][] imageCapturedDatas;
     protected bool newImagesCaptured;
     protected Thread imagesCaptureThread;
@@ -118,6 +119,7 @@ namespace ArucoUnity.Ovrvision
         throw new Exception("Unkown error when opening Ovrvision cameras. Try to restart the application.");
       }
       ovSetCamSyncMode(false);
+      camerasOpened = true;
 
       // Configure the camera textures
       int width = ovGetImageWidth(), height = ovGetImageHeight();
@@ -147,6 +149,16 @@ namespace ArucoUnity.Ovrvision
     /// </summary>
     public override void StopCameras()
     {
+      if (camerasOpened)
+      {
+        imageCaptureMutex.WaitOne();
+        if (ovClose() != 0)
+        {
+          throw new Exception("Unkown error when closing Ovrvision cameras. Try to restart the application.");
+        }
+        imageCaptureMutex.ReleaseMutex();
+      }
+
       base.StopCameras();
       OnStopped();
     }
@@ -191,7 +203,7 @@ namespace ArucoUnity.Ovrvision
     // Methods
 
     /// <summary>
-    /// Gets the current image frame from the cameras or closes the cameras if <see cref="IsStarted"/> is false.
+    /// Gets the current image frame from the cameras if cameras are configured and started.
     /// </summary>
     protected void ImagesCapturingThreadMain()
     {
@@ -217,15 +229,6 @@ namespace ArucoUnity.Ovrvision
       catch (Exception e)
       {
         imageCaptureException = e;
-        imageCaptureMutex.ReleaseMutex();
-      }
-      finally
-      {
-        imageCaptureMutex.WaitOne();
-        if (ovClose() != 0)
-        {
-          throw new Exception("Unkown error when closing Ovrvision cameras. Try to restart the application.");
-        }
         imageCaptureMutex.ReleaseMutex();
       }
     }
