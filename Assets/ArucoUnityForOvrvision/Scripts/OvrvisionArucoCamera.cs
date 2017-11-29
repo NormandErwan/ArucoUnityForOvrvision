@@ -109,9 +109,9 @@ namespace ArucoUnity.Ovrvision
     /// <summary>
     /// Starts the cameras and the images capturing thread.
     /// </summary>
-    public override void StartCameras()
+    public override void StartController()
     {
-      base.StartCameras();
+      base.StartController();
 
       // Open the cameras
       if (ovOpen(ovrvisionLocationId, ovrvisionArSize, (int)CameraMode) != 0)
@@ -147,7 +147,7 @@ namespace ArucoUnity.Ovrvision
     /// <summary>
     /// Stops the cameras and the image capturing thread.
     /// </summary>
-    public override void StopCameras()
+    public override void StopController()
     {
       if (camerasOpened)
       {
@@ -159,7 +159,7 @@ namespace ArucoUnity.Ovrvision
         imageCaptureMutex.ReleaseMutex();
       }
 
-      base.StopCameras();
+      base.StopController();
       OnStopped();
     }
 
@@ -175,7 +175,7 @@ namespace ArucoUnity.Ovrvision
       if (imageCaptureException != null)
       {
         Exception e = imageCaptureException;
-        StopCameras();
+        StopController();
         imageCaptureMutex.ReleaseMutex();
 
         throw e;
