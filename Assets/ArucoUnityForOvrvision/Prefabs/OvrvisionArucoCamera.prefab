@@ -516,7 +516,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoStart: 1
-  cameraMode: 4
+  cameraMode: 3
 --- !u!114 &114610290765149014
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -528,8 +528,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3648ba3f74da4164db2b440ad0fbe471, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arucoCamera: {fileID: 114218197856288940}
   autoStart: 1
+  stereoArucoCamera: {fileID: 114218197856288940}
+  arucoCameraUndistortion: {fileID: 0}
   leftEye: {fileID: 4998521767228342}
   rightEye: {fileID: 4227083340550464}
   leftCamera: {fileID: 20642233409300516}
