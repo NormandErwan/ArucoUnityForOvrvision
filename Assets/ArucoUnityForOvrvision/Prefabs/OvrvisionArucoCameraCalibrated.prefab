@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 4574705753439874}
   - component: {fileID: 33901734952228412}
   - component: {fileID: 23111843305969902}
-  m_Layer: 25
+  m_Layer: 10
   m_Name: RightBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 4971509267537908}
   - component: {fileID: 33945329003144956}
   - component: {fileID: 23609130695090008}
-  m_Layer: 24
+  m_Layer: 9
   m_Name: LeftBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -220,7 +220,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 33554432
+    m_Bits: 33555456
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -255,7 +255,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 16777216
+    m_Bits: 16777728
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -396,7 +396,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoLoadFile: 1
   cameraParametersFolderPath: ArucoUnityForOvrvision/CameraParameters/
-  cameraParametersFilename: Ovrvision.xml
+  cameraParametersFilename: Ovrvision-sample.xml
 --- !u!114 &114389004116975652
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -13,6 +13,9 @@ TagManager:
   - UI
   - 
   - 
+  - ArucoCameraBackground
+  - ArucoCameraStereoBackground1
+  - ArucoCameraStereoBackground2
   - 
   - 
   - 
@@ -28,9 +31,6 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - OvrvisionProLeftImage
-  - OvrvisionProRightImage
   - 
   - 
   - 
