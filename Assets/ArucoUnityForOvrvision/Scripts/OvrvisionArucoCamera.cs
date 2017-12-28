@@ -175,8 +175,9 @@ namespace ArucoUnity.Ovrvision
       if (imageCaptureException != null)
       {
         Exception e = imageCaptureException;
-        StopController();
         imageCaptureMutex.ReleaseMutex();
+
+        StopController();
 
         throw e;
       }
@@ -192,7 +193,7 @@ namespace ArucoUnity.Ovrvision
         newImagesCaptured = false;
       }
       imageCaptureMutex.ReleaseMutex();
-      
+
       // Execute the OnImagesUpdated if new images has been updated this frame
       if (callOnImagesUpdated)
       {
