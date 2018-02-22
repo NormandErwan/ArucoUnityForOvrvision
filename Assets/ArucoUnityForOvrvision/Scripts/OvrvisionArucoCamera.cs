@@ -126,7 +126,6 @@ namespace ArucoUnity.Ovrvision
       for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
       {
         ImageTextures[cameraId] = new Texture2D(width, height, TextureFormat.RGB24, false);
-        ImageTextures[cameraId].wrapMode = TextureWrapMode.Clamp;
       }
 
       // Initialize images properties
@@ -187,9 +186,10 @@ namespace ArucoUnity.Ovrvision
       {
         for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
         {
-          Array.Copy(imageCapturedDatas[cameraId], ImageDatas[cameraId], ImageDataSizes[cameraId]);
+          Array.Copy(imageCapturedDatas[cameraId], NextImageDatas[cameraId], ImageDataSizes[cameraId]);
         }
         callOnImagesUpdated = true;
+
         newImagesCaptured = false;
       }
       imageCaptureMutex.ReleaseMutex();
@@ -213,7 +213,6 @@ namespace ArucoUnity.Ovrvision
         while (IsConfigured && IsStarted)
         {
           imageCaptureMutex.WaitOne();
-
           if (!newImagesCaptured)
           {
             ovPreStoreCamData((int)processingMode);
@@ -221,9 +220,9 @@ namespace ArucoUnity.Ovrvision
             {
               ovGetCamImageRGB(imageCapturedDatas[cameraId], cameraId);
             }
+
             newImagesCaptured = true;
           }
-
           imageCaptureMutex.ReleaseMutex();
         }
       }
