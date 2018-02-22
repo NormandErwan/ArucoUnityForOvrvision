@@ -4,4 +4,7 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/ArucoUnityForOvrvision/Scenes/Tracking.unity
+    guid: 9ef9634e82149d6479ab2e92babaac3d
