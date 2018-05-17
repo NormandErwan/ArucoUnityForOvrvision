@@ -80,21 +80,20 @@ namespace ArucoUnity.Ovrvision
 
     // Variables
 
-    protected bool camerasOpened = false;
     protected byte[][] imageCapturedDatas;
     protected bool newImagesCaptured;
     protected Thread imagesCaptureThread;
     protected Mutex imageCaptureMutex = new Mutex();
     protected Exception imageCaptureException;
 
-    // ArucoCamera methods
+    // ConfigurableController methods
 
     /// <summary>
     /// Initializes the properties and recenter the VR input tracking.
     /// </summary>
-    public override void Configure()
+    protected override void Configuring()
     {
-      base.Configure();
+      base.Configuring();
 
       flipHorizontallyImages = false;
       flipVerticallyImages = true;
@@ -102,16 +101,14 @@ namespace ArucoUnity.Ovrvision
       imageCapturedDatas = new byte[CameraNumber][];
 
       InputTracking.Recenter();
-
-      OnConfigured();
     }
 
     /// <summary>
     /// Starts the cameras and the images capturing thread.
     /// </summary>
-    public override void StartController()
+    protected override void Starting()
     {
-      base.StartController();
+      base.Starting();
 
       // Open the cameras
       if (ovOpen(ovrvisionLocationId, ovrvisionArSize, (int)CameraMode) != 0)
@@ -119,13 +116,12 @@ namespace ArucoUnity.Ovrvision
         throw new Exception("Unkown error when opening Ovrvision cameras. Try to restart the application.");
       }
       ovSetCamSyncMode(false);
-      camerasOpened = true;
 
       // Configure the camera textures
       int width = ovGetImageWidth(), height = ovGetImageHeight();
       for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
       {
-        ImageTextures[cameraId] = new Texture2D(width, height, TextureFormat.RGB24, false);
+        Textures[cameraId] = new Texture2D(width, height, TextureFormat.RGB24, false);
       }
 
       // Initialize images properties
@@ -146,26 +142,24 @@ namespace ArucoUnity.Ovrvision
     /// <summary>
     /// Stops the cameras and the image capturing thread.
     /// </summary>
-    public override void StopController()
+    protected override void Stopping()
     {
-      if (camerasOpened)
+      base.Stopping();
+      imageCaptureMutex.WaitOne();
+      if (ovClose() != 0)
       {
-        imageCaptureMutex.WaitOne();
-        if (ovClose() != 0)
-        {
-          throw new Exception("Unkown error when closing Ovrvision cameras. Try to restart the application.");
-        }
-        imageCaptureMutex.ReleaseMutex();
+        throw new Exception("Unkown error when closing Ovrvision cameras. Try to restart the application.");
       }
-
-      base.StopController();
-      OnStopped();
+      imageCaptureMutex.ReleaseMutex();
     }
 
+    // ArucoCamera methods
+
     /// <summary>
-    /// Checks if there was an exception in the image capturing thread otherwise copies the captured image frame to <see cref="ImageDatas"/>.
+    /// Checks if there was an exception in the image capturing thread otherwise copies the captured image frame to
+    /// <see cref="ImageDatas"/>.
     /// </summary>
-    protected override void UpdateCameraImages()
+    protected override void UpdateCameraImagesInternal()
     {
       bool callOnImagesUpdated = false;
 

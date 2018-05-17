@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using ArucoUnity.Utilities;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace ArucoUnity
@@ -168,7 +169,7 @@ namespace ArucoUnity
         {
           if (OvrvisionArucoCamera.IsStarted)
           {
-            ConfigureCameraParameters();
+            ConfigureCameraParameters(OvrvisionArucoCamera);
           }
           OvrvisionArucoCamera.Started += ConfigureCameraParameters;
         }
@@ -219,7 +220,7 @@ namespace ArucoUnity
         GetParametersFromCamera();
       }
 
-      protected void ConfigureCameraParameters()
+      protected void ConfigureCameraParameters(IConfigurableController arucoCamera)
       {
         if (SetParametersAtStart)
         {
