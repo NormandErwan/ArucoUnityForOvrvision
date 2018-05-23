@@ -28,7 +28,7 @@ namespace ArucoUnity.Ovrvision
   }
 
   /// <summary>
-  /// Captures image frames from the Ovrvision Pro stereo camera.
+  /// Captures image from the Ovrvision Pro stereo camera.
   /// </summary>
   public class OvrvisionArucoCamera : StereoArucoCamera
   {
@@ -64,7 +64,7 @@ namespace ArucoUnity.Ovrvision
     // Editor fields
 
     [SerializeField]
-    [Tooltip("The mode to use with the Ovrvision cameras.")]
+    [Tooltip("The camera mode to use.")]
     private CameraMode cameraMode = CameraMode.VR_960x950_60FPS;
 
     // IArucoCamera properties
@@ -74,17 +74,16 @@ namespace ArucoUnity.Ovrvision
     // Properties
 
     /// <summary>
-    /// Gets or sets the mode to use with the Ovrvision cameras.
+    /// Gets or sets the camera mode to use.
     /// </summary>
     public CameraMode CameraMode { get { return cameraMode; } set { cameraMode = value; } }
 
     // Variables
 
-    protected byte[][] imageCapturedDatas;
-    protected bool newImagesCaptured;
+    protected bool newImagesCaptured, imagesCaptureThreadUpdated;
     protected Thread imagesCaptureThread;
-    protected Mutex imageCaptureMutex = new Mutex();
-    protected Exception imageCaptureException;
+    protected Mutex imagesCaptureMutex = new Mutex();
+    protected Exception imagesCaptureException;
 
     // ConfigurableController methods
 
@@ -93,24 +92,22 @@ namespace ArucoUnity.Ovrvision
     /// </summary>
     protected override void Configuring()
     {
-      base.Configuring();
-
       flipHorizontallyImages = false;
       flipVerticallyImages = true;
 
-      imageCapturedDatas = new byte[CameraNumber][];
-
       InputTracking.Recenter();
+
+      base.Configuring();
     }
 
     /// <summary>
-    /// Starts the cameras and the images capturing thread.
+    /// Starts the camera, configures <see cref="ArucoCamera.Textures"/> and starts the image capturing thread.
     /// </summary>
     protected override void Starting()
     {
       base.Starting();
 
-      // Open the cameras
+      // Open the camera
       if (ovOpen(ovrvisionLocationId, ovrvisionArSize, (int)CameraMode) != 0)
       {
         throw new Exception("Unkown error when opening Ovrvision cameras. Try to restart the application.");
@@ -123,17 +120,15 @@ namespace ArucoUnity.Ovrvision
       {
         Textures[cameraId] = new Texture2D(width, height, TextureFormat.RGB24, false);
       }
+    }
 
-      // Initialize images properties
-      OnStarted();
+    /// <summary>
+    /// Configures and starts the image capturing thread. 
+    /// </summary>
+    protected override void OnStarted()
+    {
+      base.OnStarted();
 
-      // Initialize the image datas of the capturing thread
-      for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
-      {
-        imageCapturedDatas[cameraId] = new byte[ImageDataSizes[cameraId]];
-      }
-
-      // Start the image capturing thread
       newImagesCaptured = false;
       imagesCaptureThread = new Thread(ImagesCapturingThreadMain);
       imagesCaptureThread.Start();
@@ -145,12 +140,12 @@ namespace ArucoUnity.Ovrvision
     protected override void Stopping()
     {
       base.Stopping();
-      imageCaptureMutex.WaitOne();
+      imagesCaptureMutex.WaitOne();
       if (ovClose() != 0)
       {
         throw new Exception("Unkown error when closing Ovrvision cameras. Try to restart the application.");
       }
-      imageCaptureMutex.ReleaseMutex();
+      imagesCaptureMutex.ReleaseMutex();
     }
 
     // ArucoCamera methods
@@ -159,40 +154,23 @@ namespace ArucoUnity.Ovrvision
     /// Checks if there was an exception in the image capturing thread otherwise copies the captured image frame to
     /// <see cref="ImageDatas"/>.
     /// </summary>
-    protected override void UpdateCameraImagesInternal()
+    protected override bool UpdatingImages()
     {
-      bool callOnImagesUpdated = false;
-
-      // Stop if exception in the capture image thread
-      imageCaptureMutex.WaitOne();
-      if (imageCaptureException != null)
+      imagesCaptureMutex.WaitOne();
+      if (imagesCaptureException != null)
       {
-        Exception e = imageCaptureException;
-        imageCaptureMutex.ReleaseMutex();
+        Exception e = imagesCaptureException;
+        imagesCaptureMutex.ReleaseMutex();
 
         StopController();
-
         throw e;
       }
 
-      // Copy frame if there were new one and no exception
-      if (newImagesCaptured)
-      {
-        for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
-        {
-          Array.Copy(imageCapturedDatas[cameraId], NextImageDatas[cameraId], ImageDataSizes[cameraId]);
-        }
-        callOnImagesUpdated = true;
+      imagesCaptureThreadUpdated = newImagesCaptured;
+      newImagesCaptured = false;
+      imagesCaptureMutex.ReleaseMutex();
 
-        newImagesCaptured = false;
-      }
-      imageCaptureMutex.ReleaseMutex();
-
-      // Execute the OnImagesUpdated if new images has been updated this frame
-      if (callOnImagesUpdated)
-      {
-        OnImagesUpdated();
-      }
+      return imagesCaptureThreadUpdated;
     }
 
     // Methods
@@ -206,24 +184,24 @@ namespace ArucoUnity.Ovrvision
       {
         while (IsConfigured && IsStarted)
         {
-          imageCaptureMutex.WaitOne();
+          imagesCaptureMutex.WaitOne();
           if (!newImagesCaptured)
           {
             ovPreStoreCamData((int)processingMode);
             for (int cameraId = 0; cameraId < CameraNumber; cameraId++)
             {
-              ovGetCamImageRGB(imageCapturedDatas[cameraId], cameraId);
+              ovGetCamImageRGB(NextImageDatas[cameraId], cameraId);
             }
 
             newImagesCaptured = true;
           }
-          imageCaptureMutex.ReleaseMutex();
+          imagesCaptureMutex.ReleaseMutex();
         }
       }
       catch (Exception e)
       {
-        imageCaptureException = e;
-        imageCaptureMutex.ReleaseMutex();
+        imagesCaptureException = e;
+        imagesCaptureMutex.ReleaseMutex();
       }
     }
   }
