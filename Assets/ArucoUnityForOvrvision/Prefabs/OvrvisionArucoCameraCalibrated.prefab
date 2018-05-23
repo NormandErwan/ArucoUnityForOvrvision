@@ -176,7 +176,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1026603289275982}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.07, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4574705753439874}
@@ -227,6 +227,7 @@ Camera:
   m_TargetEye: 2
   m_HDR: 0
   m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
@@ -262,6 +263,7 @@ Camera:
   m_TargetEye: 1
   m_HDR: 0
   m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
@@ -297,6 +299,7 @@ Camera:
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
@@ -314,6 +317,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: a937e1f0eb227c44ebbdf6578da8c572, type: 2}
   m_StaticBatchInfo:
@@ -348,6 +352,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: a937e1f0eb227c44ebbdf6578da8c572, type: 2}
   m_StaticBatchInfo:
@@ -396,7 +401,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoLoadFile: 1
   cameraParametersFolderPath: ArucoUnityForOvrvision/CameraParameters/
-  cameraParametersFilename: Ovrvision-sample.xml
+  cameraParametersFilename: OvrvisionSample.xml
 --- !u!114 &114389004116975652
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -423,11 +428,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoStart: 1
   CameraParametersController: {fileID: 114096338652071418}
+  arucoCamera: {fileID: 114389004116975652}
   rectificationType: 0
   perspectiveFieldOfViews:
-  - 106.188
-  - 106.188
-  stereoArucoCamera: {fileID: 114389004116975652}
+  - 106
+  - 106
 --- !u!114 &114540584033205848
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -461,7 +466,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoStart: 1
-  stereoArucoCamera: {fileID: 114389004116975652}
+  arucoCamera: {fileID: 114389004116975652}
   arucoCameraUndistortion: {fileID: 114470386066292324}
   stereoVRCamera: {fileID: 20900424948276160}
   leftBackgroundCamera: {fileID: 20109288557561390}
