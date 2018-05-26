@@ -101,7 +101,7 @@ namespace ArucoUnity.Ovrvision
     }
 
     /// <summary>
-    /// Starts the camera, configures <see cref="ArucoCamera.Textures"/> and starts the image capturing thread.
+    /// Starts the camera and configures <see cref="ArucoCamera.Textures"/>.
     /// </summary>
     protected override void Starting()
     {
@@ -135,7 +135,7 @@ namespace ArucoUnity.Ovrvision
     }
 
     /// <summary>
-    /// Stops the cameras and the image capturing thread.
+    /// Stops the camera and the image capturing thread.
     /// </summary>
     protected override void Stopping()
     {
@@ -151,8 +151,8 @@ namespace ArucoUnity.Ovrvision
     // ArucoCamera methods
 
     /// <summary>
-    /// Checks if there was an exception in the image capturing thread otherwise copies the captured image frame to
-    /// <see cref="ImageDatas"/>.
+    /// Checks if there was an exception in the image capturing thread otherwise returns if new images have been copied
+    /// to <see cref="ArucoCamera.NextImages"/>.
     /// </summary>
     protected override bool UpdatingImages()
     {
@@ -167,16 +167,31 @@ namespace ArucoUnity.Ovrvision
       }
 
       imagesCaptureThreadUpdated = newImagesCaptured;
-      newImagesCaptured = false;
       imagesCaptureMutex.ReleaseMutex();
 
       return imagesCaptureThreadUpdated;
     }
 
+    /// <summary>
+    /// Allows the image capturing thread to get new images in the new buffer if <see cref="UpdatingImages()"/>
+    /// returned true.
+    /// </summary>
+    protected override void OnImagesUpdated()
+    {
+      base.OnImagesUpdated();
+
+      if (imagesCaptureThreadUpdated)
+      {
+        imagesCaptureMutex.WaitOne();
+        newImagesCaptured = false;
+        imagesCaptureMutex.ReleaseMutex();
+      }
+    }
+
     // Methods
 
     /// <summary>
-    /// Gets the current image frame from the cameras if cameras are configured and started.
+    /// Copies the current images to <see cref="ArucoCamera.NextImages"/> if the camera is configured and started.
     /// </summary>
     protected void ImagesCapturingThreadMain()
     {
